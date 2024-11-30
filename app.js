@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const feedRoutes = require("./routes/feed");
+const { default: mongoose } = require("mongoose");
 
 const app = express();
 
@@ -24,6 +25,15 @@ app.get("/", (req, res) => {
   res.send("Hello, Node learner!");
 });
 
-app.listen(8080, () => {
-  console.log("The port is running on 8080");
-});
+mongoose
+  .connect(
+    "mongodb+srv://himibaba10:PDSc0wmxY1wiVn65@cluster0.jtbd7.mongodb.net/node-rest"
+  )
+  .then(() => {
+    app.listen(8080, () => {
+      console.log("The port is running on 8080");
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
