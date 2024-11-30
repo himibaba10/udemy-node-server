@@ -2,19 +2,10 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 
 exports.getPosts = (req, res, next) => {
-  res.status(200).json({
-    posts: [
-      {
-        _id: 1,
-        title: "First Post",
-        content: "This is the first post!",
-        imageUrl: "images/heart.png",
-        creator: {
-          name: "Himi",
-        },
-        createdAt: new Date(),
-      },
-    ],
+  Post.find().then((posts) => {
+    res.status(200).json({
+      posts,
+    });
   });
 };
 
