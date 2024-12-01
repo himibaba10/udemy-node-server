@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
+const AppError = require("../middlewares/errorHandler");
 
 exports.getPosts = (req, res, next) => {
   Post.find().then((posts) => {
@@ -13,10 +14,7 @@ exports.createPost = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: "Validation failed!",
-      error: errors.array(),
-    });
+    throw new AppError("Validation failed!", 422);
   }
 
   const title = req.body.title;
@@ -39,6 +37,6 @@ exports.createPost = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      next(err);
     });
 };

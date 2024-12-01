@@ -25,6 +25,20 @@ app.get("/", (req, res) => {
   res.send("Hello, Node learner!");
 });
 
+app.use((err, req, res, next) => {
+  const { message, statusCode = 500, isOperational } = err;
+
+  if (!isOperational) {
+    console.error("Unexpected Error:", err);
+  }
+
+  res.status(statusCode).json({
+    status: "error",
+    message,
+  });
+  
+});
+
 mongoose
   .connect(
     "mongodb+srv://himibaba10:PDSc0wmxY1wiVn65@cluster0.jtbd7.mongodb.net/node-rest"
