@@ -42,9 +42,15 @@ exports.createPost = (req, res, next) => {
 };
 
 exports.getPost = (req, res, next) => {
-  Post.findById(req.params.id).then((post) => {
-    res.status(200).json({
-      post,
-    });
-  });
+  Post.findById(req.params.postId)
+    .then((post) => {
+      if (!post) {
+        throw new AppError("No post found with that ID", 404);
+      }
+      res.status(200).json({
+        message: "Post was successfully retrieved",
+        post,
+      });
+    })
+    .catch((err) => next(err));
 };
