@@ -1,7 +1,7 @@
-const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 const AppError = require("../middlewares/errorHandler");
-const path = require("path");
+const validateError = require("../utils/validateError");
+const clearImage = require("../utils/clearImage");
 
 exports.getPosts = (req, res, next) => {
   Post.find().then((posts) => {
@@ -12,16 +12,11 @@ exports.getPosts = (req, res, next) => {
 };
 
 exports.createPost = (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    throw new AppError("Validation failed!", 422);
-  }
+  validateError(req);
 
   const title = req.body.title;
   const content = req.body.content;
   const imageUrl = req.file.path.replace(/\\/g, "/");
-  console.log({ imageUrl });
 
   // Create post in db
   Post.create({
@@ -47,12 +42,44 @@ exports.createPost = (req, res, next) => {
 exports.getPost = (req, res, next) => {
   Post.findById(req.params.postId)
     .then((post) => {
-      if (!post) {
-        throw new AppError("No post found with that ID", 404);
-      }
+      if (!post) throw new AppError("No post found with that ID", 404);
+
       res.status(200).json({
         message: "Post was successfully retrieved",
         post,
+      });
+    })
+    .catch((err) => next(err));
+};
+
+exports.updatePost = (req, res, next) => {
+  validateError(req);
+  const postId = req.params.postId;
+  const title = req.body.title;
+  const content = req.body.content;
+  const imageUrl = req.file
+    ? req.file.path.replace(/\\/g, "/")
+    : req.body.image;
+
+  if (!imageUrl) throw new AppError("Please provide an image", 400);
+
+  Post.findById(postId)
+    .then((post) => {
+      if (!post) throw new AppError("No post found with that ID", 404);
+      if (post.imageUrl !== imageUrl) {
+        console.log(post.imageUrl, imageUrl);
+        clearImage(post.imageUrl);
+      }
+      post.title = title;
+      post.content = content;
+      post.imageUrl = imageUrl;
+
+      return post.save();
+    })
+    .then((result) => {
+      res.status(200).json({
+        message: "Post updated successfully",
+        post: result,
       });
     })
     .catch((err) => next(err));
