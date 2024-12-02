@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 const AppError = require("../middlewares/errorHandler");
+const path = require("path");
 
 exports.getPosts = (req, res, next) => {
   Post.find().then((posts) => {
@@ -19,6 +20,8 @@ exports.createPost = (req, res, next) => {
 
   const title = req.body.title;
   const content = req.body.content;
+  const imageUrl = req.file.path.replace(/\\/g, "/");
+  console.log({ imageUrl });
 
   // Create post in db
   Post.create({
@@ -27,7 +30,7 @@ exports.createPost = (req, res, next) => {
     creator: {
       name: "Himi",
     },
-    imageUrl: "images/heart.png",
+    imageUrl,
   })
     .then((result) => {
       res.status(201).send({
