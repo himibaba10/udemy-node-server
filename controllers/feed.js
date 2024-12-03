@@ -84,3 +84,17 @@ exports.updatePost = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
+
+exports.deletePost = (req, res, next) => {
+  Post.findById(req.params.postId)
+    .then((post) => {
+      if (!post) throw new AppError("No post found with that ID", 404);
+      clearImage(post.imageUrl);
+      return Post.findByIdAndDelete(req.params.postId);
+    })
+    .then((result) => {
+      console.log(result);
+      res.status(200).json({ message: "The post is deleted successfully." });
+    })
+    .catch((err) => next(err));
+};
