@@ -1,5 +1,4 @@
 const { Schema, model, Types } = require("mongoose");
-const { validateEmail } = require("../constants/validators");
 const Post = require("./post");
 
 const userSchema = new Schema(
@@ -11,7 +10,6 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: true,
-      validate: [validateEmail, "Please enter a valid email"],
     },
     password: {
       type: String,
@@ -20,10 +18,12 @@ const userSchema = new Schema(
     status: {
       type: String,
       required: true,
+      default: "active",
     },
     posts: {
-      type: Types.ObjectId,
+      type: [Types.ObjectId],
       ref: Post,
+      default: [],
     },
   },
   { timestamps: true }

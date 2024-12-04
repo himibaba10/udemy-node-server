@@ -5,9 +5,20 @@ const validatePost = [
   body("content").trim().isLength({ min: 5 }),
 ];
 
-var validateEmail = function (email) {
-  var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-  return re.test(email);
-};
+var validateSignupUser = [
+  body("name")
+    .trim()
+    .isLength({ min: 5, max: 40 })
+    .withMessage("Username must be at least 5 characters"),
+  body("email")
+    .trim()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Email must be valid"),
+  body("password")
+    .trim()
+    .isLength({ min: 5 })
+    .withMessage("Password must be at least 5 characters"),
+];
 
-module.exports = { validateEmail, validatePost };
+module.exports = { validateSignupUser, validatePost };

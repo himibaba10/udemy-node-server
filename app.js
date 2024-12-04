@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 
 const feedRoutes = require("./routes/feed");
+const authRoutes = require("./routes/auth");
 const { default: mongoose } = require("mongoose");
 const multer = require("multer");
 
@@ -46,6 +47,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/feed", feedRoutes);
+app.use("/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello, Node learner!");
@@ -73,6 +75,4 @@ mongoose
       console.log("The port is running on 8080");
     });
   })
-  .catch((err) => {
-    console.log(err);
-  });
+  .catch((err) => console.log(err));
