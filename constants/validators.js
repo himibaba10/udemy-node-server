@@ -5,4 +5,9 @@ const validatePost = [
   body("content").trim().isLength({ min: 5 }),
 ];
 
-module.exports = validatePost;
+var validateEmail = function (email) {
+  var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  return re.test(email);
+};
+
+module.exports = { validateEmail, validatePost };

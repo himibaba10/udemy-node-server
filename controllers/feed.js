@@ -4,11 +4,25 @@ const validateError = require("../utils/validateError");
 const clearImage = require("../utils/clearImage");
 
 exports.getPosts = (req, res, next) => {
-  Post.find().then((posts) => {
-    res.status(200).json({
-      posts,
-    });
-  });
+  const currentPage = req.query.page || 1;
+  const perPage = 2;
+  let totalItems;
+  Post.find()
+    .countDocuments()
+    .then((count) => {
+      totalItems = count;
+      return Post.find()
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage);
+    })
+    .then((posts) => {
+      res.status(200).json({
+        message: "Fetch posts successfully",
+        posts,
+        totalItems,
+      });
+    })
+    .catch((err) => next(err));
 };
 
 exports.createPost = (req, res, next) => {
