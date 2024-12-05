@@ -5,7 +5,7 @@ const AppError = require("../middlewares/errorHandler");
 const clearImage = (filepath) => {
   const file = path.join(process.cwd(), filepath);
   fs.unlink(file, (err) => {
-    throw new AppError("Could not remove image", 400);
+    if (err) throw new AppError("Could not remove image", 400);
   });
 };
 

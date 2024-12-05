@@ -36,6 +36,7 @@ const fileFilter = (req, file, cb) => {
 
 app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
 
+// For CORS
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(

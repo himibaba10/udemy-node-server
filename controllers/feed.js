@@ -81,7 +81,6 @@ exports.updatePost = (req, res, next) => {
     .then((post) => {
       if (!post) throw new AppError("No post found with that ID", 404);
       if (post.imageUrl !== imageUrl) {
-        console.log(post.imageUrl, imageUrl);
         clearImage(post.imageUrl);
       }
       post.title = title;
@@ -107,7 +106,6 @@ exports.deletePost = (req, res, next) => {
       return Post.findByIdAndDelete(req.params.postId);
     })
     .then((result) => {
-      console.log(result);
       res.status(200).json({ message: "The post is deleted successfully." });
     })
     .catch((err) => next(err));
