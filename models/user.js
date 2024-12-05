@@ -20,11 +20,12 @@ const userSchema = new Schema(
       required: true,
       default: "active",
     },
-    posts: {
-      type: [Types.ObjectId],
-      ref: Post,
-      default: [],
-    },
+    posts: [
+      {
+        type: Types.ObjectId,
+        ref: Post,
+      },
+    ],
   },
   { timestamps: true }
 );

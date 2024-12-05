@@ -2,6 +2,8 @@ const Post = require("../models/post");
 const AppError = require("../middlewares/errorHandler");
 const validateError = require("../utils/validateError");
 const clearImage = require("../utils/clearImage");
+const User = require("../models/user");
+const isCreator = require("../utils/isCreator");
 
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -12,6 +14,7 @@ exports.getPosts = (req, res, next) => {
     .then((count) => {
       totalItems = count;
       return Post.find()
+        .populate("creator")
         .skip((currentPage - 1) * perPage)
         .limit(perPage);
     })
@@ -32,20 +35,30 @@ exports.createPost = (req, res, next) => {
   const content = req.body.content;
   const imageUrl = req.file.path.replace(/\\/g, "/");
 
+  let createdPost;
+  let creator;
   // Create post in db
   Post.create({
     title: title,
     content: content,
-    creator: {
-      name: "Himi",
-    },
+    creator: req.userId,
     imageUrl,
   })
     .then((result) => {
+      createdPost = result;
+      return User.findById(req.userId);
+    })
+    .then((user) => {
+      creator = user;
+      user.posts.push(createdPost);
+      return user.save();
+    })
+    .then(() => {
       res.status(201).send({
         success: true,
         message: "Post created successfully",
-        post: result,
+        post: createdPost,
+        creator: { _id: creator._id, name: creator.name },
       });
     })
     .catch((err) => {
@@ -80,6 +93,7 @@ exports.updatePost = (req, res, next) => {
   Post.findById(postId)
     .then((post) => {
       if (!post) throw new AppError("No post found with that ID", 404);
+      isCreator(post.creator.toString(), req.userId);
       if (post.imageUrl !== imageUrl) {
         clearImage(post.imageUrl);
       }
@@ -99,13 +113,24 @@ exports.updatePost = (req, res, next) => {
 };
 
 exports.deletePost = (req, res, next) => {
-  Post.findById(req.params.postId)
+  const postId = req.params.postId;
+  Post.findById(postId)
     .then((post) => {
       if (!post) throw new AppError("No post found with that ID", 404);
+      isCreator(post.creator.toString(), req.userId);
+      if (post.creator.toString() !== req.userId)
+        throw new AppError("Not authorized", 401);
       clearImage(post.imageUrl);
-      return Post.findByIdAndDelete(req.params.postId);
+      return Post.findByIdAndDelete(postId);
     })
     .then((result) => {
+      return User.findById(req.userId);
+    })
+    .then((user) => {
+      user.posts.pull(postId);
+      return user.save();
+    })
+    .then(() => {
       res.status(200).json({ message: "The post is deleted successfully." });
     })
     .catch((err) => next(err));
