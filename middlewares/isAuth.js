@@ -3,7 +3,7 @@ const AppError = require("./errorHandler");
 
 const isAuth = (req, res, next) => {
   try {
-    const token = req.get("Authorization").split(" ")[1];
+    const token = req.get("Authorization")?.split(" ")[1];
     const decodedUser = jwt.verify(token, "supersupersecretjwntoken");
     if (!decodedUser) throw new AppError("Invalid authorization", 401);
 

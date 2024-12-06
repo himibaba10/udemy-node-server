@@ -4,6 +4,7 @@ const validateError = require("../utils/validateError");
 const clearImage = require("../utils/clearImage");
 const User = require("../models/user");
 const isCreator = require("../utils/isCreator");
+const { getIO } = require("../socket");
 
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -14,6 +15,7 @@ exports.getPosts = (req, res, next) => {
     .then((count) => {
       totalItems = count;
       return Post.find()
+        .sort({ createdAt: -1 })
         .populate("creator")
         .skip((currentPage - 1) * perPage)
         .limit(perPage);
@@ -54,6 +56,13 @@ exports.createPost = (req, res, next) => {
       return user.save();
     })
     .then(() => {
+      getIO().emit("posts", {
+        action: "create",
+        post: {
+          ...createdPost._doc,
+          creator: { _id: creator._id, name: creator.name },
+        },
+      });
       res.status(201).send({
         success: true,
         message: "Post created successfully",
@@ -91,12 +100,12 @@ exports.updatePost = (req, res, next) => {
   if (!imageUrl) throw new AppError("Please provide an image", 400);
 
   Post.findById(postId)
+    .populate("creator")
     .then((post) => {
       if (!post) throw new AppError("No post found with that ID", 404);
-      isCreator(post.creator.toString(), req.userId);
-      if (post.imageUrl !== imageUrl) {
-        clearImage(post.imageUrl);
-      }
+      fetchedPost = post;
+      isCreator(post.creator._id.toString(), req.userId);
+      if (post.imageUrl !== imageUrl) clearImage(post.imageUrl);
       post.title = title;
       post.content = content;
       post.imageUrl = imageUrl;
@@ -104,6 +113,7 @@ exports.updatePost = (req, res, next) => {
       return post.save();
     })
     .then((result) => {
+      getIO().emit("posts", { action: "update", post: result });
       res.status(200).json({
         message: "Post updated successfully",
         post: result,
@@ -131,6 +141,7 @@ exports.deletePost = (req, res, next) => {
       return user.save();
     })
     .then(() => {
+      getIO().emit("posts", { action: "delete", post: postId });
       res.status(200).json({ message: "The post is deleted successfully." });
     })
     .catch((err) => next(err));
