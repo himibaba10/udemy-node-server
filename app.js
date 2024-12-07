@@ -1,13 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-
-const feedRoutes = require("./routes/feed");
-const authRoutes = require("./routes/auth");
 const { default: mongoose } = require("mongoose");
+
 const cors = require("./middlewares/cors");
 const useMulter = require("./middlewares/useMulter");
-const { createSocket } = require("./socket");
+const { graphqlHTTP } = require("express-graphql");
+const schema = require("./graphql/schema");
+const resolvers = require("./graphql/resolvers");
 
 const app = express();
 
@@ -19,13 +19,19 @@ app.use(useMulter);
 // For CORS
 app.use(cors);
 
-app.use("/feed", feedRoutes);
-app.use("/auth", authRoutes);
-
 app.get("/", (req, res) => {
   res.send("Hello, Node learner!");
 });
 
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema,
+    rootValue: resolvers,
+  })
+);
+
+// Error handling middleware
 app.use((err, req, res, next) => {
   const { message, statusCode = 500, isOperational } = err;
 
@@ -44,13 +50,8 @@ mongoose
     "mongodb+srv://himibaba10:PDSc0wmxY1wiVn65@cluster0.jtbd7.mongodb.net/node-rest"
   )
   .then(() => {
-    const server = app.listen(8080, () => {
+    app.listen(8080, () => {
       console.log("The port is running on 8080");
-    });
-    const io = createSocket(server);
-
-    io.on("connection", (socket) => {
-      console.log("Client connected");
     });
   })
   .catch((err) => console.log(err));
