@@ -5,10 +5,9 @@ const { default: mongoose } = require("mongoose");
 
 const cors = require("./middlewares/cors");
 const useMulter = require("./middlewares/useMulter");
-const { graphqlHTTP } = require("express-graphql");
+const { createHandler } = require("graphql-http/lib/use/express");
 const schema = require("./graphql/schema");
-const resolvers = require("./graphql/resolvers");
-
+// const resolvers = require("./graphql/resolvers");
 const app = express();
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
@@ -23,16 +22,17 @@ app.get("/", (req, res) => {
   res.send("Hello, Node learner!");
 });
 
-app.use(
-  "/graphql",
-  graphqlHTTP({
-    schema,
-    rootValue: resolvers,
-  })
-);
+app.all("/graphql", createHandler({ schema }));
+
+// app.use(
+//   "/graphiql",
+//   createGraphiQLHandler({
+//     graphqlEndpoint: "/graphql",
+//   })
+// );
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   const { message, statusCode = 500, isOperational } = err;
 
   if (!isOperational) {
