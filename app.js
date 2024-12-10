@@ -22,7 +22,21 @@ app.get("/", (req, res) => {
   res.send("Hello, Node learner!");
 });
 
-app.all("/graphql", createHandler({ schema }));
+app.all(
+  "/graphql",
+  createHandler({
+    schema,
+    formatError(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const data = err.originalError.data;
+      const statusCode = err.originalError.statusCode;
+      const message = err.message;
+      return { data, statusCode, message };
+    },
+  })
+);
 
 // app.use(
 //   "/graphiql",

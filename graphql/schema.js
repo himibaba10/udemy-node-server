@@ -7,7 +7,6 @@ const {
   GraphQLList,
   GraphQLInputObjectType,
 } = require("graphql");
-const AppError = require("../middlewares/errorHandler");
 const { createUserResolver } = require("./resolvers");
 
 const createTypes = () => {
