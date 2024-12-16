@@ -7,7 +7,7 @@ const {
   GraphQLList,
   GraphQLInputObjectType,
 } = require("graphql");
-const { createUserResolver } = require("./resolvers");
+const { createUserResolver, loginResolver } = require("./resolvers");
 
 const createTypes = () => {
   // User Type
@@ -46,19 +46,32 @@ const createTypes = () => {
     },
   });
 
-  return { UserType, PostType, UserInputType };
+  //Auth data type
+  const AuthData = new GraphQLObjectType({
+    name: "AuthData",
+    fields: {
+      userId: { type: new GraphQLNonNull(GraphQLID) },
+      token: { type: new GraphQLNonNull(GraphQLString) },
+    },
+  });
+
+  return { UserType, PostType, UserInputType, AuthData };
 };
 
 // Extract types
-const { UserType, UserInputType } = createTypes();
+const { AuthData, UserType, UserInputType } = createTypes();
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: "RootQuery",
     fields: {
-      hello: {
-        type: GraphQLString,
-        resolve: () => "Hello, world!",
+      login: {
+        type: AuthData,
+        args: {
+          email: { type: new GraphQLNonNull(GraphQLString) },
+          password: { type: new GraphQLNonNull(GraphQLString) },
+        },
+        resolve: loginResolver,
       },
     },
   }),

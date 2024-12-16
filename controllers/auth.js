@@ -57,4 +57,4 @@ exports.postLogin = (req, res, next) => {
     .catch((err) => next(err));
 };
 
-exports.postLogout = (req, res, next) => {};
+// exports.postLogout = (req, res, next) => {};

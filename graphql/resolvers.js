@@ -2,6 +2,7 @@ const AppError = require("../middlewares/errorHandler");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
 
 const createUserResolver = async (_, { userInput }) => {
   const errors = [];
@@ -39,4 +40,22 @@ const createUserResolver = async (_, { userInput }) => {
   }
 };
 
-module.exports = { createUserResolver };
+const loginResolver = async (_, { email, password }) => {
+  try {
+    const user = await User.findOne({ email });
+    if (!user) throw new AppError("User does not exist", 404);
+    const isMatched = await bcrypt.compare(password, user.password);
+    if (!isMatched) throw new AppError("Password does not match", 401);
+    const token = jwt.sign(
+      { userId: user._id.toString(), email: user.email },
+      "supersupersecretjwntoken",
+      { expiresIn: "1h" }
+    );
+
+    return { token, userId: user._id.toString() };
+  } catch ({ message, statusCode }) {
+    throw new AppError(message || "Can't login user", statusCode || 500);
+  }
+};
+
+module.exports = { createUserResolver, loginResolver };
