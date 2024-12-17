@@ -3,6 +3,7 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
+const Post = require("../models/post");
 
 const createUserResolver = async (_, { userInput }) => {
   const errors = [];
@@ -58,4 +59,45 @@ const loginResolver = async (_, { email, password }) => {
   }
 };
 
-module.exports = { createUserResolver, loginResolver };
+const createPostResolver = async (
+  _,
+  { postInput },
+  { isAuthenticated, userId }
+) => {
+  const errors = [];
+  try {
+    if (!isAuthenticated) throw new AppError("User is not authenticated", 401);
+
+    const { title, content, imageUrl } = postInput;
+    console.log({ title, content, imageUrl });
+
+    // Checking errors
+    if (validator.isEmpty(title) || !validator.isLength(title, { min: 5 }))
+      errors.push({ message: "Title is not valid" });
+
+    if (validator.isEmpty(content) || !validator.isLength(content, { min: 5 }))
+      errors.push({ message: "Content is not valid" });
+
+    if (errors.length > 0) throw new AppError("Invalid input", 401);
+
+    const user = await User.findById(userId);
+    if (!user) throw new AppError("No user found", 404);
+
+    const newPost = new Post({ title, content, imageUrl, creator: user });
+    const createdPost = await newPost.save();
+
+    user.posts.push(createdPost);
+    await user.save();
+
+    return {
+      ...createdPost._doc,
+      _id: createdPost._id.toString(),
+      createdAt: createdPost.createdAt.toISOString(),
+      updatedAt: createdPost.updatedAt.toISOString(),
+    };
+  } catch ({ message, statusCode }) {
+    throw new AppError(message || "Can't create post", statusCode || 500);
+  }
+};
+
+module.exports = { createUserResolver, loginResolver, createPostResolver };

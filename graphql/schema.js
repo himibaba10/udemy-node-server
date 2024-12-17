@@ -7,7 +7,11 @@ const {
   GraphQLList,
   GraphQLInputObjectType,
 } = require("graphql");
-const { createUserResolver, loginResolver } = require("./resolvers");
+const {
+  createUserResolver,
+  loginResolver,
+  createPostResolver,
+} = require("./resolvers");
 
 const createTypes = () => {
   // User Type
@@ -46,6 +50,15 @@ const createTypes = () => {
     },
   });
 
+  const PostInputType = new GraphQLInputObjectType({
+    name: "PostInputData",
+    fields: {
+      title: { type: new GraphQLNonNull(GraphQLString) },
+      content: { type: new GraphQLNonNull(GraphQLString) },
+      imageUrl: { type: new GraphQLNonNull(GraphQLString) },
+    },
+  });
+
   //Auth data type
   const AuthData = new GraphQLObjectType({
     name: "AuthData",
@@ -55,11 +68,12 @@ const createTypes = () => {
     },
   });
 
-  return { UserType, PostType, UserInputType, AuthData };
+  return { UserType, PostType, UserInputType, AuthData, PostInputType };
 };
 
 // Extract types
-const { AuthData, UserType, UserInputType } = createTypes();
+const { AuthData, UserType, UserInputType, PostType, PostInputType } =
+  createTypes();
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -84,6 +98,13 @@ const schema = new GraphQLSchema({
           userInput: { type: new GraphQLNonNull(UserInputType) },
         },
         resolve: createUserResolver,
+      },
+      createPost: {
+        type: PostType,
+        args: {
+          postInput: { type: new GraphQLNonNull(PostInputType) },
+        },
+        resolve: createPostResolver,
       },
     },
   }),

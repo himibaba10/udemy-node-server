@@ -7,6 +7,7 @@ const cors = require("./middlewares/cors");
 const useMulter = require("./middlewares/useMulter");
 const { createHandler } = require("graphql-http/lib/use/express");
 const schema = require("./graphql/schema");
+const auth = require("./middlewares/auth");
 // const resolvers = require("./graphql/resolvers");
 const app = express();
 
@@ -22,7 +23,8 @@ app.get("/", (req, res) => {
   res.send("Hello, Node learner!");
 });
 
-app.all(
+app.use(auth);
+app.use(
   "/graphql",
   createHandler({
     schema,
@@ -34,6 +36,12 @@ app.all(
       const statusCode = err.originalError.statusCode;
       const message = err.message;
       return { data, statusCode, message };
+    },
+    context: (req) => {
+      return {
+        isAuthenticated: req.raw.isAuthenticated, // Assuming you're using passport or similar
+        userId: req.raw.userId,
+      };
     },
   })
 );
