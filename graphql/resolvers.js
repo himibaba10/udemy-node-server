@@ -100,4 +100,31 @@ const createPostResolver = async (
   }
 };
 
-module.exports = { createUserResolver, loginResolver, createPostResolver };
+const postsResolver = async (_parent, { page = 1 }, { isAuthenticated }) => {
+  if (!isAuthenticated) throw new AppError("User is not authenticated", 401);
+  const perPage = 2;
+
+  const posts = await Post.find()
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * perPage)
+    .limit(perPage)
+    .populate("creator");
+  const postCount = await Post.find().countDocuments();
+
+  return {
+    posts: posts.map((post) => ({
+      ...post._doc,
+      _id: post._id.toString(),
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString(),
+    })),
+    totalPosts: postCount,
+  };
+};
+
+module.exports = {
+  createUserResolver,
+  loginResolver,
+  createPostResolver,
+  postsResolver,
+};

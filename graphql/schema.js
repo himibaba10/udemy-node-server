@@ -6,11 +6,13 @@ const {
   GraphQLID,
   GraphQLList,
   GraphQLInputObjectType,
+  GraphQLInt,
 } = require("graphql");
 const {
   createUserResolver,
   loginResolver,
   createPostResolver,
+  postsResolver,
 } = require("./resolvers");
 
 const createTypes = () => {
@@ -40,14 +42,22 @@ const createTypes = () => {
     }),
   });
 
+  const PostData = new GraphQLObjectType({
+    name: "PostData",
+    fields: {
+      posts: { type: new GraphQLList(PostType) },
+      totalPosts: { type: GraphQLInt },
+    },
+  });
+
   // User Input Type
   const UserInputType = new GraphQLInputObjectType({
     name: "UserInputData",
-    fields: {
+    fields: () => ({
       email: { type: new GraphQLNonNull(GraphQLString) },
       name: { type: new GraphQLNonNull(GraphQLString) },
       password: { type: new GraphQLNonNull(GraphQLString) },
-    },
+    }),
   });
 
   const PostInputType = new GraphQLInputObjectType({
@@ -68,11 +78,18 @@ const createTypes = () => {
     },
   });
 
-  return { UserType, PostType, UserInputType, AuthData, PostInputType };
+  return {
+    UserType,
+    PostType,
+    UserInputType,
+    AuthData,
+    PostInputType,
+    PostData,
+  };
 };
 
 // Extract types
-const { AuthData, UserType, UserInputType, PostType, PostInputType } =
+const { AuthData, UserType, UserInputType, PostType, PostInputType, PostData } =
   createTypes();
 
 const schema = new GraphQLSchema({
@@ -86,6 +103,13 @@ const schema = new GraphQLSchema({
           password: { type: new GraphQLNonNull(GraphQLString) },
         },
         resolve: loginResolver,
+      },
+      getPosts: {
+        type: PostData,
+        args: {
+          page: { type: GraphQLInt },
+        },
+        resolve: postsResolver,
       },
     },
   }),

@@ -1,4 +1,4 @@
-const { Schema, model, Types } = require("mongoose");
+const { Schema, model } = require("mongoose");
 
 const postSchema = new Schema(
   {
@@ -15,14 +15,13 @@ const postSchema = new Schema(
       required: true,
     },
     creator: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
   },
   { timestamps: true }
 );
 
-const Post = model("post", postSchema);
+const Post = model("Post", postSchema);
 
 module.exports = Post;
