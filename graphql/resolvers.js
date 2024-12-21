@@ -69,7 +69,6 @@ const createPostResolver = async (
     if (!isAuthenticated) throw new AppError("User is not authenticated", 401);
 
     const { title, content, imageUrl } = postInput;
-    console.log({ title, content, imageUrl });
 
     // Checking errors
     if (validator.isEmpty(title) || !validator.isLength(title, { min: 5 }))

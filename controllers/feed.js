@@ -103,7 +103,7 @@ exports.updatePost = (req, res, next) => {
     .populate("creator")
     .then((post) => {
       if (!post) throw new AppError("No post found with that ID", 404);
-      fetchedPost = post;
+
       isCreator(post.creator._id.toString(), req.userId);
       if (post.imageUrl !== imageUrl) clearImage(post.imageUrl);
       post.title = title;
@@ -133,7 +133,7 @@ exports.deletePost = (req, res, next) => {
       clearImage(post.imageUrl);
       return Post.findByIdAndDelete(postId);
     })
-    .then((result) => {
+    .then(() => {
       return User.findById(req.userId);
     })
     .then((user) => {

@@ -8,6 +8,8 @@ const useMulter = require("./middlewares/useMulter");
 const { createHandler } = require("graphql-http/lib/use/express");
 const schema = require("./graphql/schema");
 const auth = require("./middlewares/auth");
+const clearImage = require("./utils/clearImage");
+const AppError = require("./middlewares/errorHandler");
 // const resolvers = require("./graphql/resolvers");
 const app = express();
 
@@ -24,6 +26,17 @@ app.get("/", (req, res) => {
 });
 
 app.use(auth);
+app.put("/post-image", (req, res) => {
+  if (!req.isAuthenticated) throw new AppError("Unauthorized", 401);
+  if (!req.file) return res.status(200).json({ message: "No file provided!" });
+  if (req.body.oldPath) clearImage(req.body.oldPath);
+  const normalizedPath = req.file.path.split(path.sep).join("/");
+
+  return res
+    .status(201)
+    .json({ message: "File stored", filePath: normalizedPath });
+});
+
 app.use(
   "/graphql",
   createHandler({
