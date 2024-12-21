@@ -121,9 +121,45 @@ const postsResolver = async (_parent, { page = 1 }, { isAuthenticated }) => {
   };
 };
 
+const postResolver = async (_parent, { postId }) => {
+  const post = await Post.findById(postId).populate("creator");
+  if (!post) throw new AppError("No post found", 404);
+  // console.log(post.creator);
+  return {
+    ...post._doc,
+    _id: post._id.toString(),
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+  };
+};
+
+const updatePostResolver = async (
+  _parent,
+  { postId, postInput },
+  { isAuthenticated }
+) => {
+  if (!isAuthenticated) throw new AppError("User is not authenticated", 401);
+  const post = await Post.findById(postId).populate("creator");
+  post.title = postInput.title;
+  post.content = postInput.content;
+  if (postInput.imageUrl !== "undefined") {
+    post.imageUrl = postInput.imageUrl;
+  }
+  await post.save();
+
+  return {
+    ...post._doc,
+    _id: post._id.toString(),
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+  };
+};
+
 module.exports = {
   createUserResolver,
   loginResolver,
   createPostResolver,
   postsResolver,
+  postResolver,
+  updatePostResolver,
 };

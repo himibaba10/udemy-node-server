@@ -13,6 +13,8 @@ const {
   loginResolver,
   createPostResolver,
   postsResolver,
+  postResolver,
+  updatePostResolver,
 } = require("./resolvers");
 
 const createTypes = () => {
@@ -65,7 +67,7 @@ const createTypes = () => {
     fields: {
       title: { type: new GraphQLNonNull(GraphQLString) },
       content: { type: new GraphQLNonNull(GraphQLString) },
-      imageUrl: { type: new GraphQLNonNull(GraphQLString) },
+      imageUrl: { type: GraphQLString },
     },
   });
 
@@ -111,6 +113,13 @@ const schema = new GraphQLSchema({
         },
         resolve: postsResolver,
       },
+      getPost: {
+        type: PostType,
+        args: {
+          postId: { type: new GraphQLNonNull(GraphQLID) },
+        },
+        resolve: postResolver,
+      },
     },
   }),
   mutation: new GraphQLObjectType({
@@ -129,6 +138,14 @@ const schema = new GraphQLSchema({
           postInput: { type: new GraphQLNonNull(PostInputType) },
         },
         resolve: createPostResolver,
+      },
+      updatePost: {
+        type: PostType,
+        args: {
+          postId: { type: new GraphQLNonNull(GraphQLID) },
+          postInput: { type: new GraphQLNonNull(PostInputType) },
+        },
+        resolve: updatePostResolver,
       },
     },
   }),
