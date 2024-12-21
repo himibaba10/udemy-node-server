@@ -155,6 +155,22 @@ const updatePostResolver = async (
   };
 };
 
+const deletePostResolver = async (
+  _parent,
+  { postId },
+  { isAuthenticated, userId }
+) => {
+  if (!isAuthenticated) throw new AppError("User is not authenticated", 401);
+  const post = await Post.findByIdAndDelete(postId);
+  if (!post) throw new AppError("No post found", 404);
+
+  const user = await User.findById(userId);
+  user.posts.pull(postId);
+  await user.save();
+
+  return true;
+};
+
 module.exports = {
   createUserResolver,
   loginResolver,
@@ -162,4 +178,5 @@ module.exports = {
   postsResolver,
   postResolver,
   updatePostResolver,
+  deletePostResolver,
 };

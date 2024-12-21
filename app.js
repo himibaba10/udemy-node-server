@@ -50,21 +50,12 @@ app.use(
       const message = err.message;
       return { data, statusCode, message };
     },
-    context: (req) => {
-      return {
-        isAuthenticated: req.raw.isAuthenticated, // Assuming you're using passport or similar
-        userId: req.raw.userId,
-      };
-    },
+    context: (req) => ({
+      isAuthenticated: req.raw.isAuthenticated, // Assuming you're using passport or similar
+      userId: req.raw.userId,
+    }),
   })
 );
-
-// app.use(
-//   "/graphiql",
-//   createGraphiQLHandler({
-//     graphqlEndpoint: "/graphql",
-//   })
-// );
 
 // Error handling middleware
 app.use((err, req, res, _next) => {

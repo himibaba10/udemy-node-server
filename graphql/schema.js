@@ -7,6 +7,7 @@ const {
   GraphQLList,
   GraphQLInputObjectType,
   GraphQLInt,
+  GraphQLBoolean,
 } = require("graphql");
 const {
   createUserResolver,
@@ -15,6 +16,7 @@ const {
   postsResolver,
   postResolver,
   updatePostResolver,
+  deletePostResolver,
 } = require("./resolvers");
 
 const createTypes = () => {
@@ -146,6 +148,13 @@ const schema = new GraphQLSchema({
           postInput: { type: new GraphQLNonNull(PostInputType) },
         },
         resolve: updatePostResolver,
+      },
+      deletePost: {
+        type: GraphQLBoolean,
+        args: {
+          postId: { type: new GraphQLNonNull(GraphQLID) },
+        },
+        resolve: deletePostResolver,
       },
     },
   }),
