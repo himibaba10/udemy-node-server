@@ -17,6 +17,8 @@ const {
   postResolver,
   updatePostResolver,
   deletePostResolver,
+  getUserStatusResolver,
+  updateUserStatusResolver,
 } = require("./resolvers");
 
 const createTypes = () => {
@@ -29,6 +31,7 @@ const createTypes = () => {
       email: { type: new GraphQLNonNull(GraphQLString) },
       password: { type: GraphQLString },
       posts: { type: new GraphQLNonNull(new GraphQLList(PostType)) },
+      status: { type: GraphQLString },
     }),
   });
 
@@ -122,6 +125,10 @@ const schema = new GraphQLSchema({
         },
         resolve: postResolver,
       },
+      getUserStatus: {
+        type: UserType,
+        resolve: getUserStatusResolver,
+      },
     },
   }),
   mutation: new GraphQLObjectType({
@@ -155,6 +162,13 @@ const schema = new GraphQLSchema({
           postId: { type: new GraphQLNonNull(GraphQLID) },
         },
         resolve: deletePostResolver,
+      },
+      updateUserStatus: {
+        type: UserType,
+        args: {
+          status: { type: new GraphQLNonNull(GraphQLString) },
+        },
+        resolve: updateUserStatusResolver,
       },
     },
   }),

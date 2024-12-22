@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const Post = require("../models/post");
+const clearImage = require("../utils/clearImage");
 
 const createUserResolver = async (_, { userInput }) => {
   const errors = [];
@@ -164,11 +165,50 @@ const deletePostResolver = async (
   const post = await Post.findByIdAndDelete(postId);
   if (!post) throw new AppError("No post found", 404);
 
+  clearImage(post.imageUrl);
+
   const user = await User.findById(userId);
   user.posts.pull(postId);
   await user.save();
 
   return true;
+};
+
+const getUserStatusResolver = async (
+  _parent,
+  _body,
+  { isAuthenticated, userId }
+) => {
+  if (!isAuthenticated) throw new AppError("User is not authenticated", 401);
+  const user = await User.findById(userId);
+  if (!user) throw new AppError("No user found", 404);
+
+  return {
+    ...user._doc,
+    _id: user._id.toString(),
+    createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),
+  };
+};
+
+const updateUserStatusResolver = async (
+  _parent,
+  { status },
+  { isAuthenticated, userId }
+) => {
+  if (!isAuthenticated) throw new AppError("User is not authenticated", 401);
+  const user = await User.findById(userId);
+  if (!user) throw new AppError("No user found", 404);
+
+  user.status = status;
+  await user.save();
+
+  return {
+    ...user._doc,
+    _id: user._id.toString(),
+    createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),
+  };
 };
 
 module.exports = {
@@ -179,4 +219,6 @@ module.exports = {
   postResolver,
   updatePostResolver,
   deletePostResolver,
+  getUserStatusResolver,
+  updateUserStatusResolver,
 };
