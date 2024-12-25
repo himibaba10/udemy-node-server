@@ -1,0 +1,5 @@
+{
+  "env": {
+    "MONGOOSE_URL": "mongodb+srv://himibaba10:PDSc0wmxY1wiVn65@cluster0.jtbd7.mongodb.net/node-rest"
+  }
+}

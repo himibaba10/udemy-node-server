@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const { default: mongoose } = require("mongoose");
+require("dotenv").config();
 
 const cors = require("./middlewares/cors");
 const useMulter = require("./middlewares/useMulter");
@@ -10,12 +11,17 @@ const schema = require("./graphql/schema");
 const auth = require("./middlewares/auth");
 const clearImage = require("./utils/clearImage");
 const AppError = require("./middlewares/errorHandler");
+const helmet = require("helmet");
+const compression = require("compression");
+
 // const resolvers = require("./graphql/resolvers");
 const app = express();
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
 app.use("/images", express.static(path.join(__dirname, "images")));
+app.use(helmet());
+app.use(compression());
 app.use(useMulter);
 
 // For CORS
@@ -72,9 +78,7 @@ app.use((err, req, res, _next) => {
 });
 
 mongoose
-  .connect(
-    "mongodb+srv://himibaba10:PDSc0wmxY1wiVn65@cluster0.jtbd7.mongodb.net/node-rest"
-  )
+  .connect(process.env.MONGOOSE_URL)
   .then(() => {
     app.listen(8080, () => {
       console.log("The port is running on 8080");
